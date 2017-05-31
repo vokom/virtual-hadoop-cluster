@@ -19,7 +19,16 @@ rm key
 fi
 apt-get update
 export DEBIAN_FRONTEND=noninteractive
-apt-get -q -y --force-yes install oracle-j2sdk1.7 cloudera-manager-server-db cloudera-manager-server cloudera-manager-daemons
+
+sudo apt-get install -y software-properties-common python-software-properties
+echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
+sudo add-apt-repository ppa:webupd8team/java -y
+sudo apt-get update
+sudo apt-get install oracle-java8-installer
+echo "Setting environment variables for Java 8.."
+sudo apt-get install -y oracle-java8-set-default
+
+apt-get -q -y --force-yes install cloudera-manager-server-db cloudera-manager-server cloudera-manager-daemons
 service cloudera-scm-server-db initdb
 service cloudera-scm-server-db start
 service cloudera-scm-server start
@@ -86,17 +95,4 @@ Vagrant.configure("2") do |config|
     slave2.vm.provision :shell, :inline => $hosts_script
     slave2.vm.provision :hostmanager
   end
-
-  config.vm.define :slave3 do |slave3|
-    slave3.vm.box = "precise64"
-    slave3.vm.provider :virtualbox do |v|
-      v.name = "vm-cluster-node4"
-      v.customize ["modifyvm", :id, "--memory", "2048"]
-    end
-    slave3.vm.network :private_network, ip: "10.211.55.103"
-    slave3.vm.hostname = "vm-cluster-node4"
-    slave3.vm.provision :shell, :inline => $hosts_script
-    slave3.vm.provision :hostmanager
-  end
-
 end
